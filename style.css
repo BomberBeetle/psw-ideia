@@ -1,0 +1,77 @@
+@import url('https://fonts.googleapis.com/css2?family=Fira+Sans&display=swap');
+
+*{
+font-family: 'Fira Sans';
+}
+
+input {
+	all: unset;
+}
+.root{
+	height:100vh;
+}
+.main-container {
+	height:100%;
+}
+
+.main-container > div {
+	height: 100%;
+}
+
+.sel-bar {
+	background-color: lightgray;
+	
+}
+
+.sel-title{
+	height: 20px;
+	padding-top: 5px;
+	padding-bottom: 25px;
+	background-color: #E0E0E0;
+	font-weight: bold;
+}
+
+.sel-main{
+	overflow-y: scroll;
+	overflow-x: hidden;
+}
+
+.sel-toolbar{
+	height: 40px;
+	margin-bottom: 20px;
+}
+
+
+.note-entry{
+	
+}
+
+.entry-trash{
+	visibility: hidden;
+}
+
+.note-entry:hover {
+	background-color: #AAAAAA;
+}
+
+.note-entry:hover > .entry-trash{
+	visibility: visible;
+}
+
+.entry-title{
+	text-overflow: ellipsis;
+}
+
+.editor-viewport {
+	height: 100%;	
+	overflow: scroll;
+}
+
+.title-edit{
+	width: 100%;
+}
+
+.editor-title {
+margin-top: 1px
+}
+
