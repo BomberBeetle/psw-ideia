@@ -1,7 +1,7 @@
 import './App.css';
 
 import {next as A} from '@automerge/automerge'
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { BrowserWebSocketClientAdapter } from "@automerge/automerge-repo-network-websocket"
 import { isValidAutomergeUrl, Repo, DocHandle} from "@automerge/automerge-repo"
@@ -34,9 +34,10 @@ const docUrl = document.location.hash = handle.url
 
 function App() {
 
+  
+
   let changeValue = (val) => {
     setEditorValue(val)
-    console.log(handle.state)
     if (handle.isReady()) {
     handle.change(d => {
       d.content = val;
@@ -46,6 +47,17 @@ function App() {
   }
 
   let [editorValue, setEditorValue] = useState("")
+
+  let fetchDoc = ()=>{
+    handle.doc().then((d) => {
+      setEditorValue(d.content);
+    })
+  }
+
+  useEffect(() => {
+    fetchDoc()
+    setInterval(fetchDoc, 1000)
+  }, [])
 
   const modules = {
     toolbar: [
@@ -63,7 +75,7 @@ function App() {
 
         [{ "direction": "rtl" }, { "align": [] }],
 
-        ["link", "image", "video", "formula"],
+        ["link"],
 
         ["clean"]
     ]
