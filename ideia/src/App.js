@@ -5,6 +5,7 @@ import { createContext, useState } from "react";
 
 import Index from "./pages/Index"
 import Editor from "./pages/Editor"
+import Register from "./pages/Register";
 
 export const UserContext = createContext(null)
 
@@ -14,7 +15,7 @@ function App(){
 
   const userStateWrapper = {
     get: ()=>userLogin,
-    set: ()=>setUserLogin
+    set: setUserLogin
   }
 
   return(
@@ -24,6 +25,7 @@ function App(){
         <Route path="/">
           <Route index element={<Index/>}/>
           <Route path="edit" element={<Editor />}/>
+          <Route path="register" element={<Register />}/>
         </Route>
       </Routes>
     </BrowserRouter>

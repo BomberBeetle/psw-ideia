@@ -1,11 +1,21 @@
-import { useContext, useState } from "react"
+import { useContext, useEffect, useRef, useState } from "react"
+import { useNavigate } from 'react-router-dom';
 import "../css/Login.css"
 
 import {UserContext} from "../App"
 
-export default function Login(){
+export default function Register(){
 
-  const cont = useContext(UserContext);
+  const cont = useRef(useContext(UserContext));
+
+  const nav = useNavigate();
+
+  useEffect(()=>{
+    console.log("context: " + cont.current.get())
+    if(!!cont.current.get()){
+        nav("/")
+    }
+  }, [])
 
   const [failedLogin, setFailedLogin] = useState(false)
   const [emailText, setEmailText] = useState("")
@@ -15,7 +25,7 @@ export default function Login(){
   const handlePassword = (e)=>setPasswordText(e.target.value)
 
   const tryLogin = () => {
-    fetch("http://localhost:3030/login/", {
+    fetch("http://localhost:3030/register/", {
       method: "post", 
       headers: {
         'Accept': 'application/json',
@@ -31,9 +41,10 @@ export default function Login(){
       }
       else{
         res.json().then(val => {
-          cont.set({id: val.id})
+          cont.current.set({id: val.id})
           setFailedLogin(false)
           console.log(val.id)
+          nav("/")
         })
         
       }
@@ -52,9 +63,8 @@ export default function Login(){
       <label htmlFor="psw"><b>Senha</b></label>
       <input type="password" value={passwordText} onChange={handlePassword} placeholder="Senha"required/>
         
-      <button onClick={tryLogin} type="button">Login</button>
-      <b>{failedLogin?"Email ou senha errados.":""}</b>
-      <a href="/register">Registrar conta</a>
+      <button onClick={tryLogin} type="button">Registrar</button>
+      <b>{failedLogin?"Email já registrado.":""}</b>
     </div>
   </form>
     )
