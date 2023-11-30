@@ -66,11 +66,24 @@ function Editor() {
     blockUpdate.current = false
   }
 
+  let changeTitle = (e) => {
+    blockUpdate.current = true
+    setTitle(e.target.value)
+    if (handle.current.isReady()) {
+      handle.current.change(d => {
+        d.title = e.target.value;
+      })
+    }
+    blockUpdate.current = false
+  }
+
   let [editorValue, setEditorValue] = useState("")
+  let [title, setTitle] = useState("")
 
   let fetchDoc = ()=>{
     handle.current.doc().then((d) => {
       setEditorValue(d.content);
+      setTitle(d.title)
     })
   }
 
@@ -104,7 +117,9 @@ function Editor() {
 
   return (
     <div>
+
       <a href="/">voltar</a> <button type="button">Adicionar colaborador</button>
+      <input type="text" value={title} onChange={changeTitle}/>
         <ReactQuill
           modules={modules}
           theme="snow"

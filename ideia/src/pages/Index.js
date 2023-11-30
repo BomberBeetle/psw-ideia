@@ -34,9 +34,9 @@ function Index(){
         })
     
     }
-
-    useEffect(()=>{
-    if(context.get()) fetch("http://localhost:3030/doc/all", { 
+    
+    let loadDocs = () => {
+        fetch("http://localhost:3030/doc/all", { 
     headers: {
       'Accept': 'application/json',
       'Content-Type': 'application/json',
@@ -50,6 +50,10 @@ function Index(){
         console.log(err)
     })
 })
+    }
+
+    useEffect(()=>{
+    if(context.get()) loadDocs()
     }, [context])
 
     let logout = ()=>{
@@ -58,7 +62,21 @@ function Index(){
 
     let deleteDoc = (index)=>{
         return () => {
-            fetch('http://localhost:3030/')
+            console.log("delete " + index)
+            fetch('http://localhost:3030/doc/delete', {
+                method: 'post',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    ownerId: context.get().id,
+                    document_id: docs[index].document_id
+                })
+            }).then(()=>{
+                loadDocs()
+                console.log("reloading post delete")
+        })
         }
     }
 
@@ -66,7 +84,7 @@ function Index(){
     <div>
         <button type="button" onClick={createDoc}>+ Novo Documento</button>
         <button type="button" onClick={logout}>Logout</button>
-        {docs.map((doc, index)=>(<><a href={`/edit#${doc.document_id}`}>{doc.document_id}</a><br/><button type="button" onClick={deleteDoc(index)}>x</button></>))}
+        {docs.map((doc, index)=>(<><a href={`/edit#${doc.document_id}`}>{doc.title?doc.title:"(sem título)"}</a><br/><button type="button" onClick={deleteDoc(index)}>x</button></>))}
         
     </div>
     ):(
