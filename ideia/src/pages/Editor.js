@@ -1,7 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState, useRef} from 'react';
+
+import { useNavigate } from 'react-router-dom';
+
+import { UserContext } from '../App';
 
 import { BrowserWebSocketClientAdapter } from "@automerge/automerge-repo-network-websocket"
-import { isValidAutomergeUrl, Repo, DocHandle} from "@automerge/automerge-repo"
+import { isValidAutomergeUrl, Repo} from "@automerge/automerge-repo"
 import { IndexedDBStorageAdapter } from "@automerge/automerge-repo-storage-indexeddb"
 
 import ReactQuill from "react-quill"
@@ -9,52 +13,72 @@ import ReactQuill from "react-quill"
 import "react-quill/dist/quill.snow.css";
 
 
-const network =  new BrowserWebSocketClientAdapter("ws://localhost:3030")
-const storage = new IndexedDBStorageAdapter()
-const repo = new Repo({
-  network: [network],
-  storage: storage
-})
-
-
-
 function Editor() {
 
-  const rootDocUrl = `${document.location.hash.substr(1)}`
-  let handle
-  if (isValidAutomergeUrl(rootDocUrl)) {
-    handle = repo.find(rootDocUrl)
-  } else {
-  handle = repo.create();
-  handle.change(d => {
-    d.title = "Doc"
-    d.content = "";
-  })
-}
-const docUrl = document.location.hash = handle.url
+  
 
-  let changeValue = (val) => {
-    setEditorValue(val)
-    if (handle.isReady()) {
-    handle.change(d => {
-      d.content = val;
+  const blockUpdate = useRef(false)
+
+  const context = useContext(UserContext)
+
+  const nav = useNavigate()
+
+  const network = useRef(null)
+  const storage = useRef(null)
+  const repo = useRef(null)
+  const handle = useRef(null)
+
+  useEffect(() => {
+    network.current = new BrowserWebSocketClientAdapter("ws://localhost:3030")
+    storage.current = new IndexedDBStorageAdapter()
+    repo.current = new Repo({
+      network: [network.current],
+      storage: storage.current
     })
 
-  }
+    const docId = `${document.location.hash.substr(1)}`
+
+    const docUrl = `automerge:${docId}`
+    if (isValidAutomergeUrl(docUrl) ) {
+      handle.current = repo.current.find(docUrl)
+    }
+    else {
+      nav("/")
+    }
+
+    if(!context.get() && !context.loading()){
+      nav("/")
+    }
+    else if(handle.current){
+      fetchDoc()
+      setInterval(updateDoc, 1000)
+    }
+  }, [])
+
+  let changeValue = (val) => {
+    blockUpdate.current = true
+    setEditorValue(val)
+    if (handle.current.isReady()) {
+      handle.current.change(d => {
+        d.content = val;
+      })
+    }
+    blockUpdate.current = false
   }
 
   let [editorValue, setEditorValue] = useState("")
 
   let fetchDoc = ()=>{
-    handle.doc().then((d) => {
+    handle.current.doc().then((d) => {
       setEditorValue(d.content);
     })
   }
 
-  useEffect(() => {
-    fetchDoc()
-    setInterval(fetchDoc, 1000)
-  }, [])
+  let updateDoc = ()=>{
+    if(!blockUpdate.current) fetchDoc();
+  }
+
+  
 
   const modules = {
     toolbar: [
@@ -79,15 +103,14 @@ const docUrl = document.location.hash = handle.url
 }
 
   return (
-    <div className="App">
-      <header className="App-header">
+    <div>
+      <a href="/">voltar</a> <button type="button">Adicionar colaborador</button>
         <ReactQuill
           modules={modules}
           theme="snow"
           value={editorValue}
           onChange={changeValue}
         />
-      </header>
     </div>
   );
 }
