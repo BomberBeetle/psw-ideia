@@ -1,6 +1,8 @@
 import { useContext, useEffect, useState, useRef} from 'react';
 
-import { useNavigate } from 'react-router-dom';
+import {useNavigate, useParams} from 'react-router-dom';
+
+import Modal from 'react-modal'
 
 import { UserContext } from '../App';
 
@@ -13,9 +15,16 @@ import ReactQuill from "react-quill"
 import "react-quill/dist/quill.snow.css";
 
 
+Modal.setAppElement('#root')
+
 function Editor() {
 
-  
+  const [modalIsOpen, setIsOpen] = useState(false)
+  const [showModalButton, setShowModalButton] = useState(false)
+  const [collabName, setCollabName] = useState("")
+  const [modalError, setModalError] = useState("")
+
+  let { ownerId } = useParams()
 
   const blockUpdate = useRef(false)
 
@@ -28,6 +37,8 @@ function Editor() {
   const repo = useRef(null)
   const handle = useRef(null)
 
+  const docId = `${document.location.hash.substr(1)}`
+
   useEffect(() => {
     network.current = new BrowserWebSocketClientAdapter("ws://localhost:3030")
     storage.current = new IndexedDBStorageAdapter()
@@ -36,24 +47,49 @@ function Editor() {
       storage: storage.current
     })
 
-    const docId = `${document.location.hash.substr(1)}`
-
-    const docUrl = `automerge:${docId}`
-    if (isValidAutomergeUrl(docUrl) ) {
-      handle.current = repo.current.find(docUrl)
-    }
-    else {
-      nav("/")
-    }
-
     if(!context.get() && !context.loading()){
       nav("/")
+      return
     }
-    else if(handle.current){
-      fetchDoc()
-      setInterval(updateDoc, 1000)
-    }
-  }, [])
+
+    if(context.get()){
+      fetch(`http://localhost:3030/doc/${docId}`, {
+      headers: {
+        'Accept': 'application/json',
+        'Owner-Id': ownerId?ownerId:context.get().id,
+        'User-Id': context.get().id
+      }
+    }).then((res)=>{
+      if(res.status === 403){
+        nav("/notAllowed")
+      }
+      else if (res.status !== 200){
+        nav("/")
+      }
+      else{
+        res.json().then((val)=>{
+          if(val.owner === context.get().id){
+            setShowModalButton(true);
+          }
+          const docUrl = `automerge:${val.automerge_id}`
+          if (isValidAutomergeUrl(docUrl) ) {
+            handle.current = repo.current.find(docUrl)
+          }
+          else {
+            nav("/")
+         }
+    
+         if(handle.current){
+            fetchDoc()
+           setInterval(updateDoc, 1000)
+          }
+        })
+        
+      }
+    })}
+
+    
+  }, [context])
 
   let changeValue = (val) => {
     blockUpdate.current = true
@@ -77,6 +113,10 @@ function Editor() {
     blockUpdate.current = false
   }
 
+  let changeCollabInput = (e) => {
+    setCollabName(e.target.value)
+  }
+
   let [editorValue, setEditorValue] = useState("")
   let [title, setTitle] = useState("")
 
@@ -91,7 +131,33 @@ function Editor() {
     if(!blockUpdate.current) fetchDoc();
   }
 
-  
+  let addCollab = ()=>{
+    if(collabName){
+      fetch("http://localhost:3030/add_collab", {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body:JSON.stringify({
+          docId: docId,
+          userId: context.get().id,
+          ownerId: (ownerId?ownerId:context.get().id),
+          collabEmail: collabName
+        })
+      }).then((res)=>{
+        if(res.status === 200){
+          setIsOpen(false);
+        }
+        else if(res.status === 404){
+          setModalError("Usuário não encontrado")
+        }
+      })
+    }
+  }
+
+  let copyShareLink = ()=>{
+    navigator.clipboard.writeText(`http://localhost:3000/edit/shared/${context.get().id}#${docId}`)
+  }
 
   const modules = {
     toolbar: [
@@ -117,8 +183,17 @@ function Editor() {
 
   return (
     <div>
-
-      <a href="/">voltar</a> <button type="button">Adicionar colaborador</button>
+      <Modal 
+        isOpen={modalIsOpen}
+        onRequestClose={()=>{setIsOpen(false)}}
+        contentLabel="add collab modal">
+      <button type="button" onClick={()=>{setIsOpen(false)}}>x</button>
+      <input type="text" placeholder='Email do colaborador' value={collabName} onChange={changeCollabInput}/>
+      <button type="button" onClick={addCollab}>Adicionar</button>
+      <button type="button" onClick={copyShareLink}>Copiar link de compartilhamento</button>
+      {modalError?(<p>{modalError}</p>):""}
+      </Modal>
+      <a href="/">voltar</a> {showModalButton?(<button type="button" onClick={()=>{setIsOpen(true)}}>Adicionar colaborador</button>):""}
       <input type="text" value={title} onChange={changeTitle}/>
         <ReactQuill
           modules={modules}

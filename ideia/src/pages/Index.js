@@ -36,7 +36,7 @@ function Index(){
     }
     
     let loadDocs = () => {
-        fetch("http://localhost:3030/doc/all", { 
+        fetch("http://localhost:3030/all_docs", { 
     headers: {
       'Accept': 'application/json',
       'Content-Type': 'application/json',

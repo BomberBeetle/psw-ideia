@@ -7,6 +7,7 @@ import localforage from "localforage"
 import Index from "./pages/Index"
 import Editor from "./pages/Editor"
 import Register from "./pages/Register";
+import NotAllowed from "./pages/NotAllowed";
 
 export const UserContext = createContext()
 
@@ -44,8 +45,12 @@ function App(){
       <Routes>
         <Route path="/">
           <Route index element={<Index/>}/>
-          <Route path="edit" element={<Editor />}/>
+          <Route path="edit">
+            <Route index element={<Editor />}/>
+            <Route path="shared/:ownerId" element={<Editor />}/>
+          </Route>
           <Route path="register" element={<Register />}/>
+          <Route path="notAllowed" element={<NotAllowed />}/>
         </Route>
       </Routes>
     </BrowserRouter>
