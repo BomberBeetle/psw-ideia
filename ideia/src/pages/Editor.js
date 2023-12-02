@@ -40,7 +40,7 @@ function Editor() {
   const docId = `${document.location.hash.substr(1)}`
 
   useEffect(() => {
-    network.current = new BrowserWebSocketClientAdapter("ws://localhost:3030")
+    network.current = new BrowserWebSocketClientAdapter("ws://" + window.location.hostname + ":3030")
     storage.current = new IndexedDBStorageAdapter()
     repo.current = new Repo({
       network: [network.current],
@@ -53,7 +53,7 @@ function Editor() {
     }
 
     if(context.get()){
-      fetch(`http://localhost:3030/doc/${docId}`, {
+      fetch(`http://${window.location.hostname}:3030/doc/${docId}`, {
       headers: {
         'Accept': 'application/json',
         'Owner-Id': ownerId?ownerId:context.get().id,
@@ -133,7 +133,7 @@ function Editor() {
 
   let addCollab = ()=>{
     if(collabName){
-      fetch("http://localhost:3030/add_collab", {
+      fetch("http://" + window.location.hostname + ":3030/add_collab", {
         method: 'post',
         headers: {
           'Content-Type': 'application/json'
@@ -156,7 +156,7 @@ function Editor() {
   }
 
   let copyShareLink = ()=>{
-    navigator.clipboard.writeText(`http://localhost:3000/edit/shared/${context.get().id}#${docId}`)
+    navigator.clipboard.writeText(`http://${window.location.hostname}:3000/edit/shared/${context.get().id}#${docId}`)
   }
 
   const modules = {
@@ -187,13 +187,13 @@ function Editor() {
         isOpen={modalIsOpen}
         onRequestClose={()=>{setIsOpen(false)}}
         contentLabel="add collab modal">
-      <button type="button" onClick={()=>{setIsOpen(false)}}>x</button>
+      <p onClick={()=>{setIsOpen(false)}}><i class="bi bi-x-circle-fill"></i></p>
       <input type="text" placeholder='Email do colaborador' value={collabName} onChange={changeCollabInput}/>
       <button type="button" onClick={addCollab}>Adicionar</button>
       <button type="button" onClick={copyShareLink}>Copiar link de compartilhamento</button>
       {modalError?(<p>{modalError}</p>):""}
       </Modal>
-      <a href="/">voltar</a> {showModalButton?(<button type="button" onClick={()=>{setIsOpen(true)}}>Adicionar colaborador</button>):""}
+      {showModalButton?(<button type="button" onClick={()=>{setIsOpen(true)}}>Adicionar colaborador</button>):""}
       <input type="text" value={title} onChange={changeTitle}/>
         <ReactQuill
           modules={modules}

@@ -25,7 +25,7 @@ export default function Register(){
   const handlePassword = (e)=>setPasswordText(e.target.value)
 
   const tryLogin = () => {
-    fetch("http://localhost:3030/register/", {
+    fetch("http://" + window.location.hostname + ":3030/register/", {
       method: "post", 
       headers: {
         'Accept': 'application/json',

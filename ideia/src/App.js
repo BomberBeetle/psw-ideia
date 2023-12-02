@@ -38,9 +38,24 @@ function App(){
     })
   }, [])
   
+  let logout = ()=>{
+    userStateWrapper.set(null)
+}
 
   return(
     <UserContext.Provider value={userStateWrapper}>
+    <nav className="navbar navbar-expand-lg navbar-light bg-light">
+  			<div className="container">
+    				<a className="navbar-brand" href="/"><i className="bi bi-lightbulb-fill" style={{color: "orange"}}></i> IDEIA</a>
+            {userStateWrapper.get()?<div class="collapse navbar-collapse" id="navbarNav">
+              <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                   <button className="nav-link" type="button" onClick={logout}>Logout</button>
+                </li>
+              </ul>
+            </div>:""}
+       </div>
+    </nav> 
     <BrowserRouter>
       <Routes>
         <Route path="/">

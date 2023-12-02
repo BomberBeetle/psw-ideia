@@ -15,7 +15,7 @@ export default function Login(){
   const handlePassword = (e)=>setPasswordText(e.target.value)
 
   const tryLogin = () => {
-    fetch("http://localhost:3030/login/", {
+    fetch("http://" + window.location.hostname + ":3030/login/", {
       method: "post", 
       headers: {
         'Accept': 'application/json',

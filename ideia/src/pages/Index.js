@@ -16,7 +16,7 @@ function Index(){
     const context = useContext(UserContext)
 
     let createDoc = ()=>{
-        fetch("http://localhost:3030/doc/create", {
+        fetch("http://" + window.location.hostname + ":3030/doc/create", {
             method: "post", 
              headers: {
                 'Accept': 'application/json',
@@ -36,7 +36,7 @@ function Index(){
     }
     
     let loadDocs = () => {
-        fetch("http://localhost:3030/all_docs", { 
+        fetch("http://" + window.location.hostname + ":3030/all_docs", { 
     headers: {
       'Accept': 'application/json',
       'Content-Type': 'application/json',
@@ -56,14 +56,12 @@ function Index(){
     if(context.get()) loadDocs()
     }, [context])
 
-    let logout = ()=>{
-        context.set(null)
-    }
+    
 
     let deleteDoc = (index)=>{
         return () => {
             console.log("delete " + index)
-            fetch('http://localhost:3030/doc/delete', {
+            fetch('http://' + window.location.hostname + ':3030/doc/delete', {
                 method: 'post',
                 headers: {
                     'Accept': 'application/json',
@@ -83,8 +81,16 @@ function Index(){
     return context.get()?(
     <div>
         <button type="button" onClick={createDoc}>+ Novo Documento</button>
-        <button type="button" onClick={logout}>Logout</button>
-        {docs.map((doc, index)=>(<><a href={`/edit#${doc.document_id}`}>{doc.title?doc.title:"(sem título)"}</a><br/><button type="button" onClick={deleteDoc(index)}>x</button></>))}
+        {docs.map((doc, index)=>(
+            <a href={`/edit#${doc.document_id}`}>
+            <div className="card">
+            <div className="card-body">
+              <h5 className="card-title">{doc.title?doc.title:"(sem título)"}</h5>
+              <a href="#" onClick={deleteDoc(index)} className="btn btn-danger" style={{width: "200px"}}>Deletar</a>
+            </div>
+          </div>
+          </a>
+            ))}
         
     </div>
     ):(
