@@ -28,6 +28,8 @@ function Editor() {
 
   const blockUpdate = useRef(false)
 
+  const receivingChanges = useRef(false)
+
   const context = useContext(UserContext)
 
   const nav = useNavigate()
@@ -92,6 +94,7 @@ function Editor() {
   }, [context])
 
   let changeValue = (val) => {
+    if(!receivingChanges.current){
     blockUpdate.current = true
     setEditorValue(val)
     if (handle.current.isReady()) {
@@ -100,6 +103,7 @@ function Editor() {
       })
     }
     blockUpdate.current = false
+  }
   }
 
   let changeTitle = (e) => {
@@ -122,8 +126,10 @@ function Editor() {
 
   let fetchDoc = ()=>{
     handle.current.doc().then((d) => {
+      receivingChanges.current = true;
       setEditorValue(d.content);
       setTitle(d.title)
+      receivingChanges.current = false;
     })
   }
 
